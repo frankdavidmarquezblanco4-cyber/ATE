@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATE-TPACK Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .hidden { display: none !important; }
+    .page { display: block; }
+    select { appearance: auto; }
+    textarea { resize: vertical; }
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      color: white; max-width: 360px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease; pointer-events: auto;
+    }
+    .toast-success { background: #059669; }
+    .toast-error { background: #dc2626; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .step-content { display: none; }
+    .step-content.active { display: block; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .learn-detail { display: none; }
+    .learn-detail.active { display: block; }
+    .nav-creator { display: none; }
+    .nav-main { display: flex; }
+    input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- =================== NAVIGATION =================== -->
+<nav id="nav-main" class="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <button onclick="navigate('home')" class="flex items-center gap-2 font-bold text-lg text-blue-700 hover:text-blue-800 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-linejoin="round" stroke-linecap="round" stroke-width="2"/></svg>
+      ATE-TPACK
+    </button>
+    <div class="flex gap-1">
+      <button onclick="navigate('home')" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">Inicio</button>
+      <button onclick="navigate('learn')" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">Aprender</button>
+      <button onclick="navigate('example')" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">Ejemplo</button>
+      <button onclick="navigate('creator')" class="px-4 py-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">Crear ATE</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Creator nav (minimal, shown only on creator page) -->
+<nav id="nav-creator" class="hidden sticky top-0 z-40 bg-white border-b-2 border-purple-200 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <button onclick="navigate('home')" class="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      Inicio
+    </button>
+    <h1 class="text-2xl font-bold text-slate-900">ATE-TPACK Creator</h1>
+    <div class="w-20"></div>
+  </div>
+</nav>
+
+<!-- =================== TOAST =================== -->
+<div id="toast"></div>
+
+<!-- =================== PAGE: HOME =================== -->
+<div id="page-home" class="page">
+  <!-- Hero Section -->
+  <section class="relative py-20 px-4 sm:px-6 lg:px-8 bg-cover bg-center" style="background-image: linear-gradient(rgba(30, 64, 175, 0.7), rgba(22, 163, 74, 0.7)), url('https://d2xsxph8kpxj0f.cloudfront.net/310519663346110887/mUVW2Zqd3icGMZExmrW5z6/hero-tpack-construction-V4qpmtEU6SvR9uH3SB8ZBc.webp'); background-size: cover; background-position: center;">
+    <div class="max-w-4xl mx-auto text-center text-white">
+      <h1 class="text-5xl sm:text-6xl font-bold mb-6 leading-tight">Crea Actividades Tecnológicas Escolares</h1>
+      <p class="text-xl sm:text-2xl mb-8 text-blue-50 max-w-2xl mx-auto">Diseña experiencias de aprendizaje integradas con el modelo TPACK. Combina Conocimiento de Contenido, Pedagógico y Tecnológico de forma coherente.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button onclick="navigate('creator')" class="inline-flex items-center gap-2 px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-lg rounded-lg transition-colors">
+          Comenzar a Crear
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button onclick="navigate('learn')" class="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-blue-50 text-blue-700 border border-white font-semibold text-lg rounded-lg transition-colors">
+          Aprender Primero
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        </button>
+        <button onclick="openSearchATE()" class="inline-flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 text-white font-semibold text-lg rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+          Buscar mi ATE
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">¿Qué es una ATE?</h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Una Actividad Tecnológica Escolar es una propuesta didáctica estructurada basada en el construccionismo que integra diseño, construcción y reflexión para resolver problemas reales.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-blue-600">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Aprende el Modelo</h3>
+          <p class="text-gray-600 mb-4">Comprende los 6 componentes esenciales de una ATE y cómo se integran el conocimiento de contenido, pedagógico y tecnológico.</p>
+          <button onclick="navigate('learn')" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2">Explorar <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-green-600">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Ejemplo Práctico</h3>
+          <p class="text-gray-600 mb-4">Observa un ejemplo completo: "Drones para monitoreo de erosión costera". Entiende cómo se estructura una ATE desde el problema hasta la evaluación.</p>
+          <button onclick="navigate('example')" class="text-green-600 hover:text-green-700 font-semibold flex items-center gap-2">Ver Ejemplo <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-orange-600">
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-linejoin="round" stroke-linecap="round" stroke-width="2"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Crea tu ATE</h3>
+          <p class="text-gray-600 mb-4">Diseña tu propia ATE con nuestro wizard interactivo. Incluye validación, autoguardado y exportación a PDF y Word.</p>
+          <button onclick="navigate('creator')" class="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2">Crear Ahora <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TPACK Overview Section -->
+  <section class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 class="text-4xl font-bold text-gray-900 mb-6">El Modelo TPACK</h2>
+          <p class="text-lg text-gray-600 mb-4">TPACK (Technological Pedagogical Content Knowledge) es un marco que describe los tipos de conocimiento que los docentes necesitan para enseñar efectivamente con tecnología.</p>
+          <div class="space-y-4">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span class="text-blue-600 font-bold">CK</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900">Conocimiento de Contenido</h4>
+                <p class="text-gray-600">El conocimiento de la disciplina o materia a enseñar.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span class="text-green-600 font-bold">PK</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900">Conocimiento Pedagógico</h4>
+                <p class="text-gray-600">Las estrategias y métodos para enseñar efectivamente.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span class="text-orange-600 font-bold">TK</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900">Conocimiento Tecnológico</h4>
+                <p class="text-gray-600">La comprensión de las herramientas y tecnologías disponibles.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663346110887/mUVW2Zqd3icGMZExmrW5z6/pedagogical-collaboration-Q7Th9urpEVm3bNfMYAYeGM.webp" alt="Colaboración Pedagógica" class="rounded-lg shadow-lg w-full" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-green-600">
+    <div class="max-w-4xl mx-auto text-center text-white">
+      <h2 class="text-4xl font-bold mb-6">¿Listo para diseñar tu ATE?</h2>
+      <p class="text-xl mb-8 text-blue-50">Comienza ahora con nuestro wizard interactivo y crea experiencias de aprendizaje transformadoras.</p>
+      <button onclick="navigate('creator')" class="inline-flex items-center gap-2 px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-lg rounded-lg transition-colors">
+        Crear mi Primera ATE
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- =================== PAGE: LEARN =================== -->
+<div id="page-learn" class="page hidden">
+  <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-900 mb-4">Aprende sobre las ATE</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">Descubre los 6 componentes esenciales de una Actividad Tecnológica Escolar y cómo se integran para crear experiencias de aprendizaje significativas.</p>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Component Selector -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-20 bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Componentes ATE</h2>
+            <div class="space-y-3" id="learn-buttons">
+              <!-- Buttons rendered by JS -->
+            </div>
+          </div>
+        </div>
+        <!-- Details -->
+        <div class="lg:col-span-2" id="learn-detail-container">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      <!-- Visual Infographic -->
+      <div class="mt-16">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Flujo de Componentes</h2>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663346110887/mUVW2Zqd3icGMZExmrW5z6/ate-components-infographic-aDPPgbb7owX3mvR2FWY8PQ.webp" alt="Componentes de ATE" class="w-full max-w-2xl mx-auto rounded-lg block" />
+          <p class="text-center text-gray-600 mt-6">Los 6 componentes forman un ciclo integrado donde cada elemento se conecta y refuerza con los demás para crear una experiencia de aprendizaje coherente y significativa.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PAGE: EXAMPLE =================== -->
+<div id="page-example" class="page hidden">
+  <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-900 mb-4">Ejemplo Práctico: ATE Drones</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">"Uso de tecnología de drones para el monitoreo y prevención de la erosión costera en la región Caribe"</p>
+      </div>
+      <div class="mb-12">
+        <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663346110887/mUVW2Zqd3icGMZExmrW5z6/drone-coastal-monitoring-RxnjEUMkeSatDGGFywEZTi.webp" alt="Drones monitoreando erosión costera" class="w-full rounded-lg shadow-lg" />
+      </div>
+      <!-- Tabs -->
+      <div class="w-full">
+        <div class="grid grid-cols-6 gap-1 mb-8 bg-white rounded-xl p-1 shadow-sm border border-gray-200">
+          <button onclick="setExampleTab('problema')" id="tab-btn-problema" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors bg-gray-100 text-gray-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="hidden sm:inline">Problema</span>
+          </button>
+          <button onclick="setExampleTab('objetivos')" id="tab-btn-objetivos" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors text-gray-500 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/><circle cx="12" cy="12" r="2" stroke-width="2"/></svg>
+            <span class="hidden sm:inline">Objetivos</span>
+          </button>
+          <button onclick="setExampleTab('contenidos')" id="tab-btn-contenidos" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors text-gray-500 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <span class="hidden sm:inline">Contenidos</span>
+          </button>
+          <button onclick="setExampleTab('secuencia')" id="tab-btn-secuencia" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors text-gray-500 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="hidden sm:inline">Secuencia</span>
+          </button>
+          <button onclick="setExampleTab('recursos')" id="tab-btn-recursos" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors text-gray-500 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <span class="hidden sm:inline">Recursos</span>
+          </button>
+          <button onclick="setExampleTab('evaluacion')" id="tab-btn-evaluacion" class="example-tab-btn flex flex-col items-center gap-1 p-3 rounded-lg text-xs font-semibold transition-colors text-gray-500 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="hidden sm:inline">Evaluación</span>
+          </button>
+        </div>
+
+        <!-- Tab Content: Problema -->
+        <div id="tab-problema" class="tab-content active">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-red-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Situación Problema</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">El Problema</h3>
+                <p class="text-gray-700 leading-relaxed">La región Caribe colombiana enfrenta una crisis de erosión costera que amenaza comunidades, infraestructura y ecosistemas. Cada año se pierden metros de playa debido a factores como cambio climático, actividades humanas y dinámicas marinas. Las comunidades locales necesitan datos precisos para tomar decisiones informadas sobre mitigación y adaptación.</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">¿Por qué es importante?</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3"><span class="text-red-600 font-bold">•</span><span>Afecta directamente a comunidades locales y sus medios de vida</span></li>
+                  <li class="flex gap-3"><span class="text-red-600 font-bold">•</span><span>Requiere soluciones tecnológicas innovadoras</span></li>
+                  <li class="flex gap-3"><span class="text-red-600 font-bold">•</span><span>Conecta con objetivos de desarrollo sostenible</span></li>
+                  <li class="flex gap-3"><span class="text-red-600 font-bold">•</span><span>Integra múltiples disciplinas (geografía, tecnología, sostenibilidad)</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Objetivos -->
+        <div id="tab-objetivos" class="tab-content">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-blue-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Objetivos de Aprendizaje</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Objetivo General</h3>
+                <p class="text-gray-700 leading-relaxed bg-blue-50 p-4 rounded-lg">Los estudiantes analizarán datos de erosión costera obtenidos mediante tecnología de drones, identificarán patrones y factores causales, y propondrán estrategias de mitigación basadas en evidencia científica.</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Objetivos Específicos (Taxonomía de Bloom)</h3>
+                <ul class="space-y-3">
+                  <li class="bg-blue-50 p-4 rounded-lg"><span class="font-bold text-blue-600">Analizar:</span> Examinar datos de erosión e identificar patrones temporales y espaciales</li>
+                  <li class="bg-blue-50 p-4 rounded-lg"><span class="font-bold text-blue-600">Evaluar:</span> Comparar efectividad de diferentes estrategias de mitigación</li>
+                  <li class="bg-blue-50 p-4 rounded-lg"><span class="font-bold text-blue-600">Crear:</span> Diseñar una propuesta de intervención sostenible para la comunidad</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Contenidos -->
+        <div id="tab-contenidos" class="tab-content">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-green-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Contenidos</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Contenidos Técnicos</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div class="bg-green-50 p-4 rounded-lg"><h4 class="font-bold text-green-700 mb-2">Geografía Costera</h4><p class="text-gray-700 text-sm">Procesos de erosión, dinámicas marinas, cambio climático</p></div>
+                  <div class="bg-green-50 p-4 rounded-lg"><h4 class="font-bold text-green-700 mb-2">Tecnología de Drones</h4><p class="text-gray-700 text-sm">Funcionamiento, captura de imágenes, fotogrametría</p></div>
+                  <div class="bg-green-50 p-4 rounded-lg"><h4 class="font-bold text-green-700 mb-2">Análisis de Datos</h4><p class="text-gray-700 text-sm">Procesamiento de imágenes, estadística, visualización</p></div>
+                  <div class="bg-green-50 p-4 rounded-lg"><h4 class="font-bold text-green-700 mb-2">Sostenibilidad</h4><p class="text-gray-700 text-sm">ODS, adaptación al cambio climático, resiliencia</p></div>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Competencias Transversales</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3"><span class="text-green-600 font-bold">✓</span><span>Trabajo colaborativo y comunicación científica</span></li>
+                  <li class="flex gap-3"><span class="text-green-600 font-bold">✓</span><span>Pensamiento crítico y resolución de problemas</span></li>
+                  <li class="flex gap-3"><span class="text-green-600 font-bold">✓</span><span>Alfabetización digital y manejo de tecnología</span></li>
+                  <li class="flex gap-3"><span class="text-green-600 font-bold">✓</span><span>Conciencia ambiental y responsabilidad social</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Secuencia -->
+        <div id="tab-secuencia" class="tab-content">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-purple-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Secuencia Didáctica</h2>
+            <div class="space-y-6">
+              <div class="bg-purple-50 p-6 rounded-lg">
+                <h3 class="text-lg font-bold text-purple-700 mb-3">① Apertura / Enganche (10 minutos)</h3>
+                <p class="text-gray-700 mb-3"><span class="font-semibold">¿Qué hace el docente?</span> Presenta un video de la erosión costera en el Caribe. Muestra imágenes de playas desaparecidas. Plantea preguntas provocadoras.</p>
+                <p class="text-gray-700"><span class="font-semibold">¿Qué hacen los estudiantes?</span> Observan, reflexionan, comparten experiencias personales con la costa. Generan hipótesis sobre causas.</p>
+              </div>
+              <div class="bg-purple-50 p-6 rounded-lg">
+                <h3 class="text-lg font-bold text-purple-700 mb-3">② Desarrollo / Construcción (40 minutos)</h3>
+                <p class="text-gray-700 mb-3"><span class="font-semibold">¿Qué hace el docente?</span> Facilita el uso de drones para capturar imágenes. Guía el análisis de datos con software especializado. Hace preguntas que profundizan.</p>
+                <p class="text-gray-700"><span class="font-semibold">¿Qué hacen los estudiantes?</span> Operan drones, capturan imágenes, procesan datos, crean mapas de erosión, identifican patrones, discuten en equipos.</p>
+              </div>
+              <div class="bg-purple-50 p-6 rounded-lg">
+                <h3 class="text-lg font-bold text-purple-700 mb-3">③ Cierre / Reflexión (10 minutos)</h3>
+                <p class="text-gray-700 mb-3"><span class="font-semibold">¿Qué hace el docente?</span> Facilita la síntesis. Conecta hallazgos con sostenibilidad. Propone siguiente fase.</p>
+                <p class="text-gray-700"><span class="font-semibold">¿Qué hacen los estudiantes?</span> Presentan hallazgos, reflexionan sobre el proceso, proponen soluciones, evalúan su aprendizaje.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Recursos -->
+        <div id="tab-recursos" class="tab-content">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-orange-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Recursos</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Tecnología</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Drones DJI Phantom o similar con cámara 4K</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Software de fotogrametría (Pix4D, WebODM)</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Tablets o laptops para análisis de datos</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Conexión a internet estable</span></li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Requisitos Técnicos</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Espacio abierto (playa o costa) para volar drones</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Permisos de autoridades locales y aeronáuticas</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Capacitación en seguridad de drones</span></li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Materiales de Apoyo</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Guías de operación de drones</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Datos históricos de erosión costera</span></li>
+                  <li class="flex gap-3 bg-orange-50 p-3 rounded-lg"><span class="text-orange-600 font-bold">•</span><span>Plantillas de análisis de datos</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Evaluación -->
+        <div id="tab-evaluacion" class="tab-content">
+          <div class="bg-white p-8 rounded-xl shadow-sm border-l-4 border-l-teal-500">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Evaluación</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Criterios de Evaluación</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr class="bg-teal-50">
+                        <th class="text-left p-3 text-teal-700 font-bold border border-teal-200">Criterio</th>
+                        <th class="text-left p-3 text-teal-700 font-bold border border-teal-200">Peso</th>
+                        <th class="text-left p-3 text-teal-700 font-bold border border-teal-200">Descripción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="p-3 border border-gray-200">Análisis de datos</td><td class="p-3 border border-gray-200 font-bold text-teal-600">40%</td><td class="p-3 border border-gray-200">Precisión en la interpretación de datos de erosión</td></tr>
+                      <tr class="bg-gray-50"><td class="p-3 border border-gray-200">Propuesta de solución</td><td class="p-3 border border-gray-200 font-bold text-teal-600">40%</td><td class="p-3 border border-gray-200">Calidad y viabilidad de la estrategia propuesta</td></tr>
+                      <tr><td class="p-3 border border-gray-200">Comunicación</td><td class="p-3 border border-gray-200 font-bold text-teal-600">20%</td><td class="p-3 border border-gray-200">Claridad en la presentación de resultados</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3">Estrategias de Evaluación</h3>
+                <ul class="space-y-2 text-gray-700">
+                  <li class="flex gap-3 bg-teal-50 p-3 rounded-lg"><span class="text-teal-600 font-bold">✓</span><span>Evaluación formativa durante el desarrollo de la actividad</span></li>
+                  <li class="flex gap-3 bg-teal-50 p-3 rounded-lg"><span class="text-teal-600 font-bold">✓</span><span>Rúbrica de evaluación compartida con estudiantes al inicio</span></li>
+                  <li class="flex gap-3 bg-teal-50 p-3 rounded-lg"><span class="text-teal-600 font-bold">✓</span><span>Autoevaluación y coevaluación entre pares</span></li>
+                  <li class="flex gap-3 bg-teal-50 p-3 rounded-lg"><span class="text-teal-600 font-bold">✓</span><span>Portfolio digital con evidencias del proceso</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PAGE: CREATOR =================== -->
+<div id="page-creator" class="page hidden">
+  <div class="min-h-screen bg-gradient-to-br from-green-50 via-pink-50 to-purple-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Progress Bar -->
+      <div class="mb-12">
+        <div class="flex gap-1 mb-4" id="progress-bar">
+          <!-- Rendered by JS -->
+        </div>
+        <p class="text-sm text-gray-600 text-center" id="progress-text">Paso 1 de 4</p>
+      </div>
+
+      <!-- Step Content Card -->
+      <div class="bg-white rounded-xl p-8 border-2 border-purple-200 shadow-lg">
+        <h2 class="text-3xl font-bold text-slate-900 mb-2" id="step-title"></h2>
+        <p class="text-gray-600 mb-8" id="step-description"></p>
+
+        <!-- Step 1: Información del Grupo -->
+        <div id="creator-step-0" class="step-content active">
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Nombre del Proyecto *</label>
+              <input type="text" id="f-projectName" placeholder="Ej: Aprendiendo álgebra con GeoGebra" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('projectName', this.value)" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Código de Acceso *</label>
+              <input type="password" id="f-secretCode" placeholder="Cree una clave secreta para su grupo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('secretCode', this.value)" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Área Disciplinar *</label>
+              <input type="text" id="f-disciplinaryArea" placeholder="Ej: Tecnología e Informática, Matemáticas…" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('disciplinaryArea', this.value)" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Grado *</label>
+              <div class="space-y-3">
+                <select id="sel-grade" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleGradeSelect(this.value)">
+                  <option value="">Selecciona el grado</option>
+                  <optgroup label="Primaria">
+                    <option value="1°">1° — Primero</option>
+                    <option value="2°">2° — Segundo</option>
+                    <option value="3°">3° — Tercero</option>
+                    <option value="4°">4° — Cuarto</option>
+                    <option value="5°">5° — Quinto</option>
+                  </optgroup>
+                  <optgroup label="Secundaria">
+                    <option value="6°">6° — Sexto</option>
+                    <option value="7°">7° — Séptimo</option>
+                    <option value="8°">8° — Octavo</option>
+                    <option value="9°">9° — Noveno</option>
+                  </optgroup>
+                  <optgroup label="Media">
+                    <option value="10°">10° — Décimo</option>
+                    <option value="11°">11° — Undécimo</option>
+                  </optgroup>
+                  <option value="otro">Otro grado…</option>
+                </select>
+                <div id="custom-grade" class="hidden space-y-2">
+                  <input type="text" id="f-grade" placeholder="Escribe el grado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('grade', this.value)" />
+                  <button onclick="resetGrade()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver a opciones</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-4">Integrantes del Grupo (Opcional)</label>
+              <div id="members-list" class="space-y-3"></div>
+              <button onclick="addMember()" class="w-full mt-3 px-4 py-2 border border-emerald-300 hover:border-emerald-400 text-emerald-600 hover:text-emerald-700 font-semibold rounded-lg transition-colors text-sm">+ Agregar Integrante</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Problema Pedagógico -->
+        <div id="creator-step-1" class="step-content">
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Objetivo de Aprendizaje *</label>
+              <textarea id="f-learningObjective" placeholder="¿Qué deben aprender los estudiantes? Sé específico y medible." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-24" oninput="updateField('learningObjective', this.value)"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Estrategia Pedagógica *</label>
+              <div class="space-y-3">
+                <select id="sel-pedagogy" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handlePedagogySelect(this.value)">
+                  <option value="">Selecciona una estrategia</option>
+                  <option value="aprendizaje-basado-proyectos">Aprendizaje Basado en Proyectos</option>
+                  <option value="aprendizaje-colaborativo">Aprendizaje Colaborativo</option>
+                  <option value="aprendizaje-basado-problemas">Aprendizaje Basado en Problemas</option>
+                  <option value="gamificacion">Gamificación</option>
+                  <option value="flipped-classroom">Flipped Classroom</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <div id="custom-pedagogy" class="hidden space-y-2">
+                  <input type="text" id="f-pedagogicalStrategy" placeholder="Describe tu estrategia pedagógica" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('pedagogicalStrategy', this.value)" />
+                  <button onclick="resetPedagogy()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver a opciones</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Justificación de la Estrategia *</label>
+              <textarea id="f-strategyJustification" placeholder="¿Por qué elegiste esta estrategia? ¿Cómo favorece el aprendizaje?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-24" oninput="updateField('strategyJustification', this.value)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Tecnología -->
+        <div id="creator-step-2" class="step-content">
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Tecnología a Utilizar *</label>
+              <textarea id="f-technology" placeholder="Ej: GeoGebra, Python, Arduino, Google Classroom, Canva, etc." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('technology', this.value)"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Tipo de Tecnología *</label>
+              <div class="space-y-3">
+                <select id="sel-techType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleTechTypeSelect(this.value)">
+                  <option value="">Selecciona el tipo</option>
+                  <option value="software">Software</option>
+                  <option value="hardware">Hardware</option>
+                  <option value="plataforma-web">Plataforma Web</option>
+                  <option value="aplicacion-movil">Aplicación Móvil</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <div id="custom-techType" class="hidden space-y-2">
+                  <input type="text" id="f-technologyType" placeholder="Especifica el tipo de tecnología" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('technologyType', this.value)" />
+                  <button onclick="resetTechType()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver a opciones</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Acceso / Costo *</label>
+              <div class="space-y-3">
+                <select id="sel-techCost" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleTechCostSelect(this.value)">
+                  <option value="">Selecciona acceso/costo</option>
+                  <option value="gratuito">Gratuito</option>
+                  <option value="freemium">Freemium</option>
+                  <option value="pago">Pago</option>
+                  <option value="licencia-educativa">Licencia Educativa</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <div id="custom-techCost" class="hidden space-y-2">
+                  <input type="text" id="f-technologyCost" placeholder="Describe el acceso/costo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('technologyCost', this.value)" />
+                  <button onclick="resetTechCost()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver a opciones</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Secuencia Didáctica -->
+        <div id="creator-step-3" class="step-content">
+          <div class="space-y-8">
+            <!-- APERTURA -->
+            <div class="border-l-4 border-green-600 pl-4">
+              <h3 class="text-lg font-bold text-green-600 mb-4">Apertura / Enganche</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Duración (minutos) *</label>
+                  <div id="opening-dur-container">
+                    <select id="sel-openingDur" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleDurSelect('opening', this.value)">
+                      <option value="">Selecciona duración</option>
+                      <option value="5">5 minutos</option><option value="10">10 minutos</option><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="25">25 minutos</option><option value="30">30 minutos</option><option value="35">35 minutos</option><option value="40">40 minutos</option><option value="45">45 minutos</option><option value="50">50 minutos</option><option value="55">55 minutos</option><option value="60">60 minutos</option><option value="65">65 minutos</option><option value="70">70 minutos</option><option value="75">75 minutos</option><option value="80">80 minutos</option><option value="85">85 minutos</option><option value="90">90 minutos</option>
+                      <option value="otro">Otra duración</option>
+                    </select>
+                    <div id="custom-openingDur" class="hidden mt-2 flex gap-2 items-center">
+                      <input type="number" id="f-openingDuration" placeholder="Ingresa minutos" min="1" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('openingDuration', this.value.replace(/[^0-9]/g,''))" />
+                      <span class="text-gray-600 font-semibold">minutos</span>
+                      <button onclick="resetDur('opening')" class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver</button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol del Docente *</label>
+                  <textarea id="f-openingTeacherRole" placeholder="¿Qué hace el docente en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('openingTeacherRole', this.value)"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol de Estudiantes *</label>
+                  <textarea id="f-openingStudentRole" placeholder="¿Qué hacen los estudiantes en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('openingStudentRole', this.value)"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- DESARROLLO -->
+            <div class="border-l-4 border-pink-600 pl-4">
+              <h3 class="text-lg font-bold text-pink-600 mb-4">Desarrollo / Construcción</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Duración (minutos) *</label>
+                  <div id="development-dur-container">
+                    <select id="sel-developmentDur" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleDurSelect('development', this.value)">
+                      <option value="">Selecciona duración</option>
+                      <option value="5">5 minutos</option><option value="10">10 minutos</option><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="25">25 minutos</option><option value="30">30 minutos</option><option value="35">35 minutos</option><option value="40">40 minutos</option><option value="45">45 minutos</option><option value="50">50 minutos</option><option value="55">55 minutos</option><option value="60">60 minutos</option><option value="65">65 minutos</option><option value="70">70 minutos</option><option value="75">75 minutos</option><option value="80">80 minutos</option><option value="85">85 minutos</option><option value="90">90 minutos</option>
+                      <option value="otro">Otra duración</option>
+                    </select>
+                    <div id="custom-developmentDur" class="hidden mt-2 flex gap-2 items-center">
+                      <input type="number" id="f-developmentDuration" placeholder="Ingresa minutos" min="1" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('developmentDuration', this.value.replace(/[^0-9]/g,''))" />
+                      <span class="text-gray-600 font-semibold">minutos</span>
+                      <button onclick="resetDur('development')" class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver</button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol del Docente *</label>
+                  <textarea id="f-developmentTeacherRole" placeholder="¿Qué hace el docente en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('developmentTeacherRole', this.value)"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol de Estudiantes *</label>
+                  <textarea id="f-developmentStudentRole" placeholder="¿Qué hacen los estudiantes en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('developmentStudentRole', this.value)"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- CIERRE -->
+            <div class="border-l-4 border-purple-600 pl-4">
+              <h3 class="text-lg font-bold text-purple-600 mb-4">Cierre / Consolidación</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Duración (minutos) *</label>
+                  <div id="closing-dur-container">
+                    <select id="sel-closingDur" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" onchange="handleDurSelect('closing', this.value)">
+                      <option value="">Selecciona duración</option>
+                      <option value="5">5 minutos</option><option value="10">10 minutos</option><option value="15">15 minutos</option><option value="20">20 minutos</option><option value="25">25 minutos</option><option value="30">30 minutos</option><option value="35">35 minutos</option><option value="40">40 minutos</option><option value="45">45 minutos</option><option value="50">50 minutos</option><option value="55">55 minutos</option><option value="60">60 minutos</option><option value="65">65 minutos</option><option value="70">70 minutos</option><option value="75">75 minutos</option><option value="80">80 minutos</option><option value="85">85 minutos</option><option value="90">90 minutos</option>
+                      <option value="otro">Otra duración</option>
+                    </select>
+                    <div id="custom-closingDur" class="hidden mt-2 flex gap-2 items-center">
+                      <input type="number" id="f-closingDuration" placeholder="Ingresa minutos" min="1" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateField('closingDuration', this.value.replace(/[^0-9]/g,''))" />
+                      <span class="text-gray-600 font-semibold">minutos</span>
+                      <button onclick="resetDur('closing')" class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Volver</button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol del Docente *</label>
+                  <textarea id="f-closingTeacherRole" placeholder="¿Qué hace el docente en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('closingTeacherRole', this.value)"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Rol de Estudiantes *</label>
+                  <textarea id="f-closingStudentRole" placeholder="¿Qué hacen los estudiantes en esta fase?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-20" oninput="updateField('closingStudentRole', this.value)"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- DURACIÓN TOTAL -->
+            <div class="bg-purple-50 border-2 border-purple-200 p-4 rounded-lg">
+              <label class="block text-sm font-semibold text-gray-900 mb-2">Duración Total de la Lección (minutos) *</label>
+              <div class="flex gap-2 items-center">
+                <div id="total-duration-display" class="flex-1 p-3 bg-white border-2 border-purple-300 rounded-md text-lg font-bold text-purple-600">
+                  Completa los tiempos arriba
+                </div>
+              </div>
+              <p class="text-xs text-gray-600 mt-2">⚠️ La duración total se calcula automáticamente sumando: Apertura + Desarrollo + Cierre</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 justify-between pt-8 border-t-2 border-gray-200">
+          <div class="flex gap-3">
+            <button id="btn-prev" onclick="prevStep()" class="flex items-center gap-2 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all" disabled>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              Anterior
+            </button>
+            <button onclick="handleSave()" class="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              Guardar
+            </button>
+          </div>
+          <button id="btn-next" onclick="nextStep()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all">
+            Siguiente
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Export Section (last step only) -->
+      <div id="export-section" class="hidden mt-8 p-8 rounded-xl border-2 border-pink-200 shadow-lg bg-pink-50">
+        <h3 class="text-2xl font-bold text-pink-900 mb-6">Exportar tu ATE</h3>
+        <p class="text-pink-800 mb-6">Descarga tu Actividad Tecnológica Escolar en PDF:</p>
+          <button onclick="handleExport('pdf')" class="w-full flex flex-col items-center gap-3 p-6 bg-white border-2 border-red-300 hover:border-red-500 hover:shadow-lg rounded-lg transition-all">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="font-semibold text-gray-900">Descargar PDF</span>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MODAL: BUSCAR ATE =================== -->
+<div id="modal-search" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+    <button onclick="closeSearchATE()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+      </div>
+      <div>
+        <h3 class="text-2xl font-bold text-gray-900">Buscar mi ATE</h3>
+        <p class="text-sm text-gray-500">Ingresa tu código de acceso para encontrar tu ATE</p>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-900 mb-2">Código de Acceso</label>
+        <input type="password" id="search-secretCode" placeholder="Ingresa el código de tu grupo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" onkeydown="if(event.key==='Enter') handleSearchATE()" />
+      </div>
+      <div id="search-result" class="hidden"></div>
+      <button onclick="handleSearchATE()" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+        Buscar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== JAVASCRIPT =================== -->
+<script>
+// ---- State ----
+let currentPage = 'home';
+let currentStep = 0;
+const TOTAL_STEPS = 4;
+
+const initialData = {
+  projectName: '', secretCode: '', disciplinaryArea: '', grade: '',
+  members: [''],
+  learningObjective: '', pedagogicalStrategy: '', strategyJustification: '',
+  technology: '', technologyType: '', technologyCost: '',
+  contentRepresentation: '', strategyPotentiation: '',
+  totalDuration: '', openingDuration: '', developmentDuration: '', closingDuration: '',
+  openingTeacherRole: '', openingStudentRole: '',
+  developmentTeacherRole: '', developmentStudentRole: '',
+  closingTeacherRole: '', closingStudentRole: '',
+};
+
+let formData = { ...initialData };
+
+const stepTitles = ['Información del Grupo', 'Problema Pedagógico', 'Tecnología', 'Secuencia Didáctica'];
+const stepDescriptions = [
+  'Datos de identificación del equipo de trabajo',
+  'Define objetivos y estrategias de aprendizaje',
+  'Selecciona la tecnología y especifica tipo y costo',
+  'Define apertura, desarrollo y cierre de la lección',
+];
+
+// ---- Toast ----
+function toast(msg, type = 'success') {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-msg toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.remove(); }, 4000);
+}
+
+// ---- Navigation ----
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.getElementById('page-' + page).classList.remove('hidden');
+  document.getElementById('nav-main').style.display = (page === 'creator') ? 'none' : '';
+  document.getElementById('nav-creator').classList.toggle('hidden', page !== 'creator');
+  currentPage = page;
+  window.scrollTo(0, 0);
+  if (page === 'creator') { formData = { ...initialData, members: [''] }; currentStep = 0; renderCreator(); }
+  if (page === 'learn') { renderLearn(); }
+}
+
+// ---- Learn Page ----
+const learnComponents = [
+  { id: 1, name: 'Situación Problema', color: 'bg-red-500', light: 'bg-red-100', text: 'text-red-600',
+    desc: 'El punto de partida. Una situación real, auténtica y relevante que motiva a los estudiantes a aprender. Debe ser clara, desafiante y conectada con el contexto de los estudiantes.',
+    example: 'La erosión costera en la región Caribe amenaza comunidades y ecosistemas. Los estudiantes deben investigar y proponer soluciones.',
+    questions: ['¿Cuál es el problema real?', '¿Por qué es importante para los estudiantes?', '¿Cómo afecta a la comunidad local?'] },
+  { id: 2, name: 'Objetivos de Aprendizaje', color: 'bg-blue-500', light: 'bg-blue-100', text: 'text-blue-600',
+    desc: 'Los resultados esperados del aprendizaje. Deben ser observables, medibles y estar alineados con estándares curriculares. Utilizan verbos de la Taxonomía de Bloom.',
+    example: 'Los estudiantes analizarán datos de erosión, identificarán patrones y propondrán estrategias de mitigación basadas en evidencia.',
+    questions: ['¿Qué deben aprender los estudiantes?', '¿Cómo se puede medir el aprendizaje?', '¿Qué nivel cognitivo se busca alcanzar?'] },
+  { id: 3, name: 'Contenidos', color: 'bg-green-500', light: 'bg-green-100', text: 'text-green-600',
+    desc: 'Los conocimientos técnicos y sociales necesarios. Incluye tanto contenidos disciplinares como competencias transversales (trabajo en equipo, pensamiento crítico).',
+    example: 'Geología costera, análisis de datos, tecnología de drones, sostenibilidad ambiental, comunicación científica.',
+    questions: ['¿Qué contenidos técnicos se necesitan?', '¿Qué competencias sociales se desarrollan?', '¿Cómo se integran múltiples disciplinas?'] },
+  { id: 4, name: 'Secuencia Didáctica', color: 'bg-purple-500', light: 'bg-purple-100', text: 'text-purple-600',
+    desc: 'El plan de acción paso a paso. Incluye apertura (enganche), desarrollo (construcción) y cierre (reflexión). Cada fase tiene objetivos, actividades y tiempos claros.',
+    example: 'Apertura (10 min): Visualizar erosión. Desarrollo (40 min): Analizar datos con drones. Cierre (10 min): Presentar soluciones.',
+    questions: ['¿Cuál es la estructura temporal?', '¿Qué hace el docente en cada fase?', '¿Qué hacen los estudiantes?'] },
+  { id: 5, name: 'Recursos', color: 'bg-orange-500', light: 'bg-orange-100', text: 'text-orange-600',
+    desc: 'Herramientas, tecnologías y materiales necesarios. Incluye recursos tecnológicos, bibliografía, espacios físicos y requisitos técnicos.',
+    example: 'Drones DJI, software de análisis de imágenes, tablets, conexión a internet, playa o costa cercana.',
+    questions: ['¿Qué tecnologías se necesitan?', '¿Cuáles son los requisitos técnicos?', '¿Qué materiales de apoyo se requieren?'] },
+  { id: 6, name: 'Evaluación', color: 'bg-teal-500', light: 'bg-teal-100', text: 'text-teal-600',
+    desc: 'Cómo se evidencia el aprendizaje. Incluye criterios claros, rúbricas y estrategias de evaluación formativa. Puede ser individual o colaborativa.',
+    example: 'Rúbrica con criterios: análisis de datos (40%), propuesta de solución (40%), comunicación (20%).',
+    questions: ['¿Cómo se evalúa el aprendizaje?', '¿Cuáles son los criterios de éxito?', '¿Cómo se proporciona retroalimentación?'] },
+];
+let selectedLearnIdx = 0;
+
+function renderLearn() {
+  renderLearnButtons();
+  renderLearnDetail();
+}
+
+function renderLearnButtons() {
+  const btns = document.getElementById('learn-buttons');
+  btns.innerHTML = learnComponents.map((c, idx) => `
+    <button onclick="selectLearnComponent(${idx})" class="w-full p-4 rounded-lg text-left transition-all ${idx === selectedLearnIdx ? c.color + ' text-white shadow-lg' : c.light + ' ' + c.text + ' hover:shadow-md'}">
+      <div class="flex items-center gap-3">
+        <span class="font-semibold">${c.id}. ${c.name}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function renderLearnDetail() {
+  const c = learnComponents[selectedLearnIdx];
+  document.getElementById('learn-detail-container').innerHTML = `
+    <div class="bg-white rounded-xl p-8 shadow-sm border-l-4 ${c.color.replace('bg-','border-')}">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-16 h-16 ${c.light} rounded-lg flex items-center justify-center">
+          <span class="${c.text} font-bold text-2xl">${c.id}</span>
+        </div>
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">${c.name}</h2>
+          <p class="${c.text} font-semibold">Componente ${c.id} de 6</p>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Descripción</h3>
+          <p class="text-gray-700 leading-relaxed">${c.desc}</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Ejemplo Práctico</h3>
+          <div class="${c.light} p-4 rounded-lg">
+            <p class="text-gray-700">${c.example}</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 mb-3">Preguntas Clave</h3>
+          <ul class="space-y-2">
+            ${c.questions.map(q => `<li class="flex items-start gap-3"><span class="${c.text} font-bold flex-shrink-0 mt-1">•</span><span class="text-gray-700">${q}</span></li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectLearnComponent(idx) {
+  selectedLearnIdx = idx;
+  renderLearnButtons();
+  renderLearnDetail();
+}
+
+// ---- Example Page Tabs ----
+function setExampleTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.example-tab-btn').forEach(el => {
+    el.classList.remove('bg-gray-100', 'text-gray-700');
+    el.classList.add('text-gray-500');
+  });
+  document.getElementById('tab-' + tab).classList.add('active');
+  const btn = document.getElementById('tab-btn-' + tab);
+  btn.classList.remove('text-gray-500');
+  btn.classList.add('bg-gray-100', 'text-gray-700');
+}
+
+// ---- Creator ----
+function renderCreator() {
+  // Progress bar
+  const pb = document.getElementById('progress-bar');
+  pb.innerHTML = Array.from({length: TOTAL_STEPS}, (_, i) => `
+    <div class="flex-1"><div class="h-2 rounded-full transition-all ${i <= currentStep ? 'bg-gradient-to-r from-green-600 to-pink-500' : 'bg-gray-300'}"></div></div>
+  `).join('');
+  document.getElementById('progress-text').textContent = `Paso ${currentStep + 1} de ${TOTAL_STEPS}`;
+  document.getElementById('step-title').textContent = stepTitles[currentStep];
+  document.getElementById('step-description').textContent = stepDescriptions[currentStep];
+
+  // Show correct step
+  document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+  document.getElementById(`creator-step-${currentStep}`).classList.add('active');
+
+  // Prev button
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+
+  // Next/export
+  const isLast = currentStep === TOTAL_STEPS - 1;
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = isLast;
+  document.getElementById('export-section').classList.toggle('hidden', !isLast);
+
+  // Sync form values to inputs
+  syncFieldsToForm();
+
+  // Update total duration
+  updateTotalDuration();
+}
+
+function syncFieldsToForm() {
+  const fields = ['projectName','secretCode','disciplinaryArea','grade','learningObjective','pedagogicalStrategy','strategyJustification','technology','technologyType','technologyCost','openingTeacherRole','openingStudentRole','developmentTeacherRole','developmentStudentRole','closingTeacherRole','closingStudentRole','openingDuration','developmentDuration','closingDuration'];
+  fields.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    if (el) el.value = formData[f] || '';
+  });
+
+  // Members
+  renderMembersList();
+
+  // Select - grade
+  const selGrade = document.getElementById('sel-grade');
+  if (selGrade) {
+    const gradePresets = ['1°','2°','3°','4°','5°','6°','7°','8°','9°','10°','11°'];
+    const customGrade = document.getElementById('custom-grade');
+    if (!formData.grade) {
+      selGrade.value = '';
+      customGrade.classList.add('hidden');
+    } else if (gradePresets.includes(formData.grade)) {
+      selGrade.value = formData.grade;
+      customGrade.classList.add('hidden');
+    } else {
+      selGrade.value = 'otro';
+      customGrade.classList.remove('hidden');
+    }
+  }
+
+  // Select - pedagogy
+  const selPed = document.getElementById('sel-pedagogy');
+  if (selPed) {
+    const presets = ['aprendizaje-basado-proyectos','aprendizaje-colaborativo','aprendizaje-basado-problemas','gamificacion','flipped-classroom'];
+    const customPed = document.getElementById('custom-pedagogy');
+    if (!formData.pedagogicalStrategy) {
+      selPed.value = '';
+      customPed.classList.add('hidden');
+    } else if (presets.includes(formData.pedagogicalStrategy)) {
+      selPed.value = formData.pedagogicalStrategy;
+      customPed.classList.add('hidden');
+    } else {
+      selPed.value = 'otro';
+      customPed.classList.remove('hidden');
+    }
+  }
+
+  // Select - techType
+  const selTT = document.getElementById('sel-techType');
+  if (selTT) {
+    const presets = ['software','hardware','plataforma-web','aplicacion-movil'];
+    const customTT = document.getElementById('custom-techType');
+    if (!formData.technologyType) {
+      selTT.value = '';
+      customTT.classList.add('hidden');
+    } else if (presets.includes(formData.technologyType)) {
+      selTT.value = formData.technologyType;
+      customTT.classList.add('hidden');
+    } else {
+      selTT.value = 'otro';
+      customTT.classList.remove('hidden');
+    }
+  }
+
+  // Select - techCost
+  const selTC = document.getElementById('sel-techCost');
+  if (selTC) {
+    const presets = ['gratuito','freemium','pago','licencia-educativa'];
+    const customTC = document.getElementById('custom-techCost');
+    if (!formData.technologyCost) {
+      selTC.value = '';
+      customTC.classList.add('hidden');
+    } else if (presets.includes(formData.technologyCost)) {
+      selTC.value = formData.technologyCost;
+      customTC.classList.add('hidden');
+    } else {
+      selTC.value = 'otro';
+      customTC.classList.remove('hidden');
+    }
+  }
+
+  // Duration selects
+  ['opening','development','closing'].forEach(phase => {
+    const field = phase + 'Duration';
+    const sel = document.getElementById('sel-' + phase + 'Dur');
+    const custom = document.getElementById('custom-' + phase + 'Dur');
+    if (sel && custom) {
+      const presets = ['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90'];
+      if (!formData[field]) {
+        sel.value = '';
+        custom.classList.add('hidden');
+      } else if (presets.includes(formData[field])) {
+        sel.value = formData[field];
+        custom.classList.add('hidden');
+      } else {
+        sel.value = 'otro';
+        custom.classList.remove('hidden');
+      }
+    }
+  });
+}
+
+function renderMembersList() {
+  const el = document.getElementById('members-list');
+  if (!el) return;
+  el.innerHTML = formData.members.map((m, i) => `
+    <div class="flex gap-2">
+      <input type="text" value="${escHtml(m)}" placeholder="Nombre del integrante ${i+1}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" oninput="updateMember(${i}, this.value)" />
+      ${formData.members.length > 1 ? `<button onclick="removeMember(${i})" class="px-3 py-2 border border-red-200 text-red-600 hover:text-red-700 rounded-lg text-sm">✕</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function updateField(field, value) {
+  formData[field] = value;
+  if (['openingDuration','developmentDuration','closingDuration'].includes(field)) {
+    updateTotalDuration();
+  }
+  scheduleAutosave();
+}
+
+function updateMember(idx, value) {
+  formData.members[idx] = value;
+  scheduleAutosave();
+}
+
+function addMember() {
+  formData.members.push('');
+  renderMembersList();
+}
+
+function removeMember(idx) {
+  formData.members.splice(idx, 1);
+  renderMembersList();
+}
+
+function updateTotalDuration() {
+  const el = document.getElementById('total-duration-display');
+  if (!el) return;
+  const o = parseInt(formData.openingDuration) || 0;
+  const d = parseInt(formData.developmentDuration) || 0;
+  const c = parseInt(formData.closingDuration) || 0;
+  const total = o + d + c;
+  formData.totalDuration = total > 0 ? String(total) : '';
+  el.textContent = total > 0 ? `${total} minutos` : 'Completa los tiempos arriba';
+}
+
+// Select handlers
+function handlePedagogySelect(val) {
+  if (val === 'otro') {
+    document.getElementById('custom-pedagogy').classList.remove('hidden');
+    formData.pedagogicalStrategy = '';
+  } else {
+    document.getElementById('custom-pedagogy').classList.add('hidden');
+    formData.pedagogicalStrategy = val;
+  }
+  scheduleAutosave();
+}
+function resetPedagogy() {
+  document.getElementById('custom-pedagogy').classList.add('hidden');
+  document.getElementById('sel-pedagogy').value = '';
+  formData.pedagogicalStrategy = '';
+}
+
+function handleGradeSelect(val) {
+  if (val === 'otro') {
+    document.getElementById('custom-grade').classList.remove('hidden');
+    formData.grade = '';
+  } else {
+    document.getElementById('custom-grade').classList.add('hidden');
+    formData.grade = val;
+  }
+  scheduleAutosave();
+}
+function resetGrade() {
+  document.getElementById('custom-grade').classList.add('hidden');
+  document.getElementById('sel-grade').value = '';
+  formData.grade = '';
+}
+
+function handleTechTypeSelect(val) {
+  if (val === 'otro') {
+    document.getElementById('custom-techType').classList.remove('hidden');
+    formData.technologyType = '';
+  } else {
+    document.getElementById('custom-techType').classList.add('hidden');
+    formData.technologyType = val;
+  }
+  scheduleAutosave();
+}
+function resetTechType() {
+  document.getElementById('custom-techType').classList.add('hidden');
+  document.getElementById('sel-techType').value = '';
+  formData.technologyType = '';
+}
+
+function handleTechCostSelect(val) {
+  if (val === 'otro') {
+    document.getElementById('custom-techCost').classList.remove('hidden');
+    formData.technologyCost = '';
+  } else {
+    document.getElementById('custom-techCost').classList.add('hidden');
+    formData.technologyCost = val;
+  }
+  scheduleAutosave();
+}
+function resetTechCost() {
+  document.getElementById('custom-techCost').classList.add('hidden');
+  document.getElementById('sel-techCost').value = '';
+  formData.technologyCost = '';
+}
+
+function handleDurSelect(phase, val) {
+  const field = phase + 'Duration';
+  const customEl = document.getElementById('custom-' + phase + 'Dur');
+  if (val === 'otro') {
+    customEl.classList.remove('hidden');
+    formData[field] = '';
+  } else {
+    customEl.classList.add('hidden');
+    formData[field] = val;
+    updateTotalDuration();
+  }
+  scheduleAutosave();
+}
+function resetDur(phase) {
+  const field = phase + 'Duration';
+  document.getElementById('custom-' + phase + 'Dur').classList.add('hidden');
+  document.getElementById('sel-' + phase + 'Dur').value = '';
+  formData[field] = '';
+  updateTotalDuration();
+}
+
+// ---- Validation ----
+function validateStep(step) {
+  const missing = [];
+  if (step === 0) {
+    if (!formData.projectName.trim()) missing.push('Nombre del proyecto');
+    if (!formData.secretCode.trim()) missing.push('Código de acceso');
+    if (!formData.disciplinaryArea.trim()) missing.push('Área disciplinar');
+    if (!formData.grade.trim()) missing.push('Grado');
+  } else if (step === 1) {
+    if (!formData.learningObjective.trim()) missing.push('Objetivo de aprendizaje');
+    if (!formData.pedagogicalStrategy.trim()) missing.push('Estrategia pedagógica');
+    if (!formData.strategyJustification.trim()) missing.push('Justificación');
+  } else if (step === 2) {
+    if (!formData.technology.trim()) missing.push('Tecnología');
+    if (!formData.technologyType.trim()) missing.push('Tipo de tecnología');
+    if (!formData.technologyCost.trim()) missing.push('Acceso/Costo');
+  } else if (step === 3) {
+    if (!formData.openingDuration.trim()) missing.push('Duración de Apertura');
+    if (!formData.developmentDuration.trim()) missing.push('Duración de Desarrollo');
+    if (!formData.closingDuration.trim()) missing.push('Duración de Cierre');
+    if (!formData.openingTeacherRole.trim()) missing.push('Rol del docente en Apertura');
+    if (!formData.openingStudentRole.trim()) missing.push('Rol de estudiantes en Apertura');
+    if (!formData.developmentTeacherRole.trim()) missing.push('Rol del docente en Desarrollo');
+    if (!formData.developmentStudentRole.trim()) missing.push('Rol de estudiantes en Desarrollo');
+    if (!formData.closingTeacherRole.trim()) missing.push('Rol del docente en Cierre');
+    if (!formData.closingStudentRole.trim()) missing.push('Rol de estudiantes en Cierre');
+  }
+  return missing;
+}
+
+function validateAllFields() {
+  let all = [];
+  for (let i = 0; i < TOTAL_STEPS; i++) all = all.concat(validateStep(i));
+  return all;
+}
+
+// ---- Step Navigation ----
+function nextStep() {
+  const missing = validateStep(currentStep);
+  if (missing.length > 0) {
+    toast(`Campos obligatorios faltantes: ${missing.slice(0,3).join(', ')}${missing.length > 3 ? ` y ${missing.length-3} más` : ''}`, 'error');
+    return;
+  }
+  if (currentStep < TOTAL_STEPS - 1) {
+    currentStep++;
+    renderCreator();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderCreator();
+  }
+}
+
+// ---- Save ----
+let autosaveTimer = null;
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    if (validateAllFields().length === 0) {
+      localStorage.setItem('ateFormData', JSON.stringify(formData));
+    }
+  }, 1000);
+}
+
+async function handleSave() {
+  const missing = validateAllFields();
+  if (missing.length > 0) {
+    toast(`No se puede guardar. Campos faltantes: ${missing.slice(0,3).join(', ')}${missing.length > 3 ? ` y ${missing.length-3} más` : ''}`, 'error');
+    return;
+  }
+  localStorage.setItem('ateFormData', JSON.stringify(formData));
+  try {
+    const db = firebase.firestore();
+    await db.collection('ates').doc(formData.secretCode).set({
+      ...formData,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('ATE guardada correctamente ☁️');
+  } catch(e) {
+    console.error(e);
+    toast('Guardado local OK, pero falló la nube. Revisa tu conexión.', 'error');
+  }
+}
+
+// ---- Firebase Config ----
+firebase.initializeApp({
+  apiKey: "AIzaSyDT28OYhOlKjZCpFyYFyeLLM3TtPkK_lso",
+  authDomain: "ate-tpack.firebaseapp.com",
+  projectId: "ate-tpack",
+  storageBucket: "ate-tpack.firebasestorage.app",
+  messagingSenderId: "262570361746",
+  appId: "1:262570361746:web:de477ed72b2a6dabd7374b"
+});
+
+// ---- Buscar ATE ----
+function openSearchATE() {
+  document.getElementById('modal-search').classList.remove('hidden');
+  document.getElementById('search-secretCode').value = '';
+  document.getElementById('search-result').classList.add('hidden');
+  document.getElementById('search-result').innerHTML = '';
+  setTimeout(() => document.getElementById('search-secretCode').focus(), 100);
+}
+
+function closeSearchATE() {
+  document.getElementById('modal-search').classList.add('hidden');
+}
+
+async function handleSearchATE() {
+  const code = document.getElementById('search-secretCode').value.trim();
+  const resultEl = document.getElementById('search-result');
+  resultEl.classList.remove('hidden');
+
+  if (!code) {
+    resultEl.innerHTML = '<div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm font-semibold">Por favor ingresa el código de acceso.</div>';
+    return;
+  }
+
+  resultEl.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 rounded-lg p-3 text-sm font-semibold">Buscando...</div>';
+
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('ates').doc(code).get();
+
+    if (!doc.exists) {
+      resultEl.innerHTML = '<div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg p-3 text-sm font-semibold">No se encontró ninguna ATE con ese código.</div>';
+      return;
+    }
+
+    const data = doc.data();
+    resultEl.innerHTML = `
+      <div class="bg-green-50 border border-green-300 text-green-800 rounded-lg p-4 text-sm">
+        <p class="font-bold text-base mb-2">✓ ATE encontrada</p>
+        <p><span class="font-semibold">Proyecto:</span> ${escHtml(data.projectName || '—')}</p>
+        <p><span class="font-semibold">Área:</span> ${escHtml(data.disciplinaryArea || '—')}</p>
+        <p><span class="font-semibold">Grado:</span> ${escHtml(data.grade || '—')}</p>
+      </div>
+      <button onclick="loadATEFromFirebase('${escHtml(code)}')" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors mt-3">
+        Abrir y editar esta ATE
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>`;
+  } catch(e) {
+    console.error(e);
+    resultEl.innerHTML = '<div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm font-semibold">Error al conectar con la base de datos. Revisa tu conexión.</div>';
+  }
+}
+
+async function loadATEFromFirebase(code) {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('ates').doc(code).get();
+    if (doc.exists) {
+      formData = { ...initialData, ...doc.data() };
+      localStorage.setItem('ateFormData', JSON.stringify(formData));
+      closeSearchATE();
+      navigate('creator');
+    }
+  } catch(e) {
+    toast('Error al cargar la ATE. Intenta de nuevo.', 'error');
+  }
+}
+
+// ---- Export ----
+function handleExport(format) {
+  const missing = validateAllFields();
+  if (missing.length > 0) {
+    toast(`No se puede exportar. Campos faltantes: ${missing.slice(0,3).join(', ')}${missing.length > 3 ? ` y ${missing.length-3} más` : ''}`, 'error');
+    return;
+  }
+  try {
+    if (format === 'pdf') {
+      exportToPDF(formData);
+      toast('PDF descargado exitosamente');
+    } else if (format === 'word') {
+      exportToWord(formData);
+      toast('Documento Word descargado exitosamente');
+    }
+  } catch(e) {
+    toast('Error al exportar. Intenta de nuevo.', 'error');
+    console.error(e);
+  }
+}
+
+// ---- PDF Export ----
+function exportToPDF(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const PW = doc.internal.pageSize.getWidth();
+  const PH = doc.internal.pageSize.getHeight();
+  const ML = 14, MR = 14, MB = 16;
+  const CW = PW - ML - MR;
+  const LH = 5.5;
+  let y = 0;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  const footer = () => {
+    doc.setFillColor(30, 58, 138);
+    doc.rect(0, PH - 10, PW, 10, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.setFont('Helvetica', 'normal');
+    doc.text('ATE-TPACK Creator — Actividad Tecnológica Escolar', ML, PH - 3.5);
+    doc.text('Duración total: ' + (data.totalDuration || '—') + ' min', PW - MR, PH - 3.5, { align: 'right' });
+  };
+
+  const newPage = () => {
+    footer();
+    doc.addPage();
+    y = 16;
+  };
+
+  // Reserve space; start new page if needed
+  const need = (h) => { if (y + h > PH - MB) newPage(); };
+
+  // Print wrapped text line by line with automatic page breaks; returns updated y
+  const writeWrapped = (text, x, startY, maxW, fs, style, r, g, b) => {
+    doc.setFontSize(fs);
+    doc.setFont('Helvetica', style);
+    doc.setTextColor(r, g, b);
+    const lines = doc.splitTextToSize(String(text || '—'), maxW);
+    let cy = startY;
+    for (const line of lines) {
+      if (cy + LH > PH - MB) { newPage(); cy = y; }
+      doc.text(line, x, cy);
+      cy += LH;
+    }
+    return cy;
+  };
+
+  // Solid color section banner
+  const banner = (label, fr, fg, fb, tr, tg, tb) => {
+    need(10);
+    doc.setFillColor(fr, fg, fb);
+    doc.rect(ML, y, CW, 7.5, 'F');
+    doc.setFontSize(10.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(tr, tg, tb);
+    doc.text(label, ML + 3, y + 5.3);
+    y += 9.5;
+  };
+
+  // Phase subsection header with colored left bar
+  const phaseHeader = (label, r, g, b) => {
+    need(9);
+    doc.setFillColor(r, g, b);
+    doc.rect(ML, y, 3, 7, 'F');
+    doc.setFillColor(r, g, b, 0.08);
+    doc.setFillColor(245, 245, 250);
+    doc.rect(ML + 3, y, CW - 3, 7, 'F');
+    doc.setFontSize(10);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(r, g, b);
+    doc.text(label, ML + 7, y + 5);
+    y += 9;
+  };
+
+  // Labelled text block: prints bold label then wrapped value
+  const field = (label, value, indent) => {
+    const ix = ML + (indent || 0);
+    const mw = CW - (indent || 0) - 2;
+    need(8);
+    doc.setFontSize(9);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(80, 80, 80);
+    doc.text(label, ix, y);
+    y += 4.5;
+    need(6);
+    y = writeWrapped(value, ix + 2, y, mw - 2, 9.5, 'normal', 25, 25, 25);
+    y += 3.5;
+  };
+
+  // Single-line bold+value pair (wraps if needed)
+  const inline = (label, value) => {
+    need(7);
+    y = writeWrapped(label + ': ' + (value || '—'), ML + 2, y, CW - 4, 9.5, 'normal', 25, 25, 25);
+    y += 2;
+  };
+
+  const gap = (mm) => { y += mm; };
+
+  // ── PAGE 1 HEADER ─────────────────────────────────────────────────────────
+  doc.setFillColor(5, 150, 105);
+  doc.rect(0, 0, PW, 22, 'F');
+  doc.setFillColor(16, 185, 129);
+  doc.rect(0, 19, PW, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16); doc.setFont('Helvetica', 'bold');
+  doc.text('ATE-TPACK Creator', ML, 9);
+  doc.setFontSize(8.5); doc.setFont('Helvetica', 'normal');
+  doc.text('Diseñador de Actividades Tecnológicas Escolares  |  Modelo TPACK', ML, 15);
+  y = 28;
+
+  // ── PROJECT TITLE ─────────────────────────────────────────────────────────
+  doc.setFontSize(15); doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(5, 150, 105);
+  const titleLines = doc.splitTextToSize(data.projectName || 'Sin título', CW);
+  for (const tl of titleLines) { doc.text(tl, ML, y); y += 7; }
+  doc.setDrawColor(236, 72, 153); doc.setLineWidth(0.7);
+  doc.line(ML, y, PW - MR, y);
+  y += 5;
+
+  // ── INFORMACIÓN DEL GRUPO ────────────────────────────────────────────────
+  banner('INFORMACIÓN DEL GRUPO', 5, 150, 105, 255, 255, 255);
+
+  const members = data.members.filter(m => m.trim()).join(', ') || 'No especificados';
+  const memberLines = doc.splitTextToSize('Integrantes: ' + members, CW - 8);
+  const boxH = 5 + 5.5 + 5.5 + memberLines.length * LH + 4;
+  need(boxH);
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(5, 150, 105); doc.setLineWidth(0.4);
+  doc.rect(ML, y, CW, boxH, 'FD');
+  doc.setFontSize(9.5); doc.setFont('Helvetica', 'normal'); doc.setTextColor(25, 25, 25);
+  doc.text('Área disciplinar: ' + (data.disciplinaryArea || '—'), ML + 4, y + 5);
+  doc.text('Grado: ' + (data.grade || '—'), ML + 4, y + 10.5);
+  let miy = y + 16;
+  for (const ml of memberLines) { doc.text(ml, ML + 4, miy); miy += LH; }
+  y += boxH + 5;
+
+  // ── OBJETIVO DE APRENDIZAJE (CK) ─────────────────────────────────────────
+  banner('1. OBJETIVO DE APRENDIZAJE — CK', 37, 99, 235, 255, 255, 255);
+  field('Objetivo:', data.learningObjective);
+  gap(2);
+
+  // ── ESTRATEGIA PEDAGÓGICA (PK) ───────────────────────────────────────────
+  banner('2. ESTRATEGIA PEDAGÓGICA — PK', 236, 72, 153, 255, 255, 255);
+  inline('Estrategia', data.pedagogicalStrategy);
+  field('Justificación:', data.strategyJustification);
+  gap(2);
+
+  // ── TECNOLOGÍA (TK) ──────────────────────────────────────────────────────
+  banner('3. TECNOLOGÍA — TK', 168, 85, 247, 255, 255, 255);
+  inline('Tipo', data.technologyType);
+  inline('Acceso / Costo', data.technologyCost);
+  field('Descripción:', data.technology);
+  gap(2);
+
+  // ── SECUENCIA DIDÁCTICA ───────────────────────────────────────────────────
+  banner('SECUENCIA DIDÁCTICA', 30, 58, 138, 255, 255, 255);
+
+  need(9);
+  doc.setFillColor(224, 231, 255);
+  doc.setDrawColor(99, 102, 241); doc.setLineWidth(0.4);
+  doc.rect(ML, y, CW, 7.5, 'FD');
+  doc.setFontSize(9.5); doc.setFont('Helvetica', 'bold'); doc.setTextColor(55, 48, 163);
+  doc.text('Duración total de la lección: ' + (data.totalDuration || '—') + ' minutos', ML + 4, y + 5.2);
+  y += 10;
+
+  // Apertura
+  phaseHeader('APERTURA / ENGANCHE — ' + (data.openingDuration || '—') + ' min', 5, 150, 105);
+  field('Rol del Docente:', data.openingTeacherRole, 3);
+  field('Rol de Estudiantes:', data.openingStudentRole, 3);
+  gap(3);
+
+  // Desarrollo
+  phaseHeader('DESARROLLO / CONSTRUCCIÓN — ' + (data.developmentDuration || '—') + ' min', 236, 72, 153);
+  field('Rol del Docente:', data.developmentTeacherRole, 3);
+  field('Rol de Estudiantes:', data.developmentStudentRole, 3);
+  gap(3);
+
+  // Cierre
+  phaseHeader('CIERRE / CONSOLIDACIÓN — ' + (data.closingDuration || '—') + ' min', 124, 58, 237);
+  field('Rol del Docente:', data.closingTeacherRole, 3);
+  field('Rol de Estudiantes:', data.closingStudentRole, 3);
+
+  footer();
+  doc.save((data.projectName || 'ATE') + '.pdf');
+}
+
+// ---- Word Export ----
+
+function exportToWord(data) {
+  if (typeof docx === 'undefined') {
+    toast('Biblioteca Word no disponible', 'error');
+    return;
+  }
+  const { Document, Packer, Paragraph, HeadingLevel, AlignmentType } = docx;
+  const sections = [];
+
+  const heading = (text, level) => new Paragraph({ text, heading: level, spacing: { after: 100 } });
+  const para = (text, spacing = 200) => new Paragraph({ text, spacing: { after: spacing } });
+
+  sections.push(new Paragraph({ text: 'ATE-TPACK Creator', heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 100 } }));
+  sections.push(new Paragraph({ text: 'Diseñador de Actividades Tecnológicas Escolares', alignment: AlignmentType.CENTER, spacing: { after: 200 } }));
+  sections.push(heading(data.projectName, HeadingLevel.HEADING_2));
+  sections.push(heading('INFORMACIÓN DEL PROYECTO', HeadingLevel.HEADING_3));
+  sections.push(para(`Área Disciplinar: ${data.disciplinaryArea}`, 50));
+  sections.push(para(`Grado: ${data.grade}`, 50));
+  sections.push(para(`Integrantes: ${data.members.filter(m => m.trim()).join(', ') || 'No especificados'}`, 200));
+  sections.push(heading('1. OBJETIVO DE APRENDIZAJE (CK)', HeadingLevel.HEADING_3));
+  sections.push(para(data.learningObjective));
+  sections.push(heading('2. ESTRATEGIA PEDAGÓGICA (PK)', HeadingLevel.HEADING_3));
+  sections.push(para(`Estrategia: ${data.pedagogicalStrategy}`, 100));
+  sections.push(para(`Justificación: ${data.strategyJustification}`));
+  sections.push(heading('3. TECNOLOGÍA (TK)', HeadingLevel.HEADING_3));
+  sections.push(para(`Tecnología: ${data.technology}`, 50));
+  sections.push(para(`Tipo: ${data.technologyType}`, 50));
+  sections.push(para(`Acceso/Costo: ${data.technologyCost}`));
+  sections.push(heading('SECUENCIA DIDÁCTICA', HeadingLevel.HEADING_2));
+  sections.push(heading(`APERTURA / ENGANCHE (${data.openingDuration} minutos)`, HeadingLevel.HEADING_3));
+  sections.push(para(`Rol del Docente: ${data.openingTeacherRole}`, 50));
+  sections.push(para(`Rol de Estudiantes: ${data.openingStudentRole}`));
+  sections.push(heading(`DESARROLLO / CONSTRUCCIÓN (${data.developmentDuration} minutos)`, HeadingLevel.HEADING_3));
+  sections.push(para(`Rol del Docente: ${data.developmentTeacherRole}`, 50));
+  sections.push(para(`Rol de Estudiantes: ${data.developmentStudentRole}`));
+  sections.push(heading(`CIERRE / REFLEXIÓN (${data.closingDuration} minutos)`, HeadingLevel.HEADING_3));
+  sections.push(para(`Rol del Docente: ${data.closingTeacherRole}`, 50));
+  sections.push(para(`Rol de Estudiantes: ${data.closingStudentRole}`));
+  sections.push(para(`Duración Total: ${data.totalDuration} minutos`));
+
+  const wordDoc = new Document({ sections: [{ children: sections }] });
+  Packer.toBlob(wordDoc).then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = `${data.projectName}.docx`;
+    link.click();
+  });
+}
+
+// ---- Utils ----
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Init ----
+(function init() {
+  // Load saved data
+  const saved = localStorage.getItem('ateFormData');
+  if (saved) {
+    try { formData = { ...initialData, ...JSON.parse(saved) }; } catch(e) {}
+  }
+  // Start on home
+  navigate('home');
+})();
+</script>
+</body>
+</html>
